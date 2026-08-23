@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1600px; height: 1000px; overflow: hidden;
+    font-family: 'PingFang SC', 'STHeiti', 'Hiragino Sans GB', sans-serif;
+    background: #070b16; color: #e8f0f2; }
+
+  /* ── 深空背景 ── */
+  .bg { position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 900px 620px at 50% 52%, rgba(34,211,238,0.10), transparent 65%),
+      radial-gradient(ellipse 700px 500px at 15% 8%, rgba(41,113,137,0.16), transparent 60%),
+      radial-gradient(ellipse 600px 400px at 88% 92%, rgba(56,189,248,0.10), transparent 60%),
+      #070b16; }
+  .grid { position: absolute; inset: 0; opacity: .55;
+    background-image:
+      linear-gradient(rgba(56,189,248,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.045) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 75% 70% at 50% 50%, black 30%, transparent 78%);
+    -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 50%, black 30%, transparent 78%); }
+
+  /* ── 标题 ── */
+  .title { position: absolute; left: 64px; top: 48px; }
+  .title .cn { font-size: 40px; font-weight: 800; letter-spacing: 2px; }
+  .title .en { font-size: 14px; letter-spacing: 3.5px; color: #67e8f9; opacity: .75;
+    margin-top: 8px; text-transform: uppercase; }
+  .badge { position: absolute; right: 64px; top: 60px; font-size: 13px; letter-spacing: 2px;
+    color: #a5f3fc; border: 1px solid rgba(103,232,249,.35); padding: 8px 18px;
+    border-radius: 999px; background: rgba(34,211,238,.07); }
+
+  /* ── 中心 Logo ── */
+  .hub { position: absolute; left: 50%; top: 52%; transform: translate(-50%,-50%);
+    width: 330px; height: 330px; }
+  .hub .ring { position: absolute; inset: 0; border-radius: 50%;
+    border: 1px solid rgba(103,232,249,.28); }
+  .hub .ring.r2 { inset: 20px; border-style: dashed; border-color: rgba(103,232,249,.20); }
+  .hub .ring.r3 { inset: -16px; border-color: rgba(103,232,249,.12); }
+  .hub .core { position: absolute; inset: 44px; border-radius: 50%;
+    background: radial-gradient(circle at 34% 28%, rgba(34,211,238,.28), rgba(10,18,32,.96) 62%);
+    border: 1.5px solid rgba(103,232,249,.55);
+    box-shadow: 0 0 90px rgba(34,211,238,.45), 0 0 30px rgba(34,211,238,.30), inset 0 0 46px rgba(34,211,238,.16);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .hub .mono { font-size: 62px; font-weight: 900; letter-spacing: 1px;
+    background: linear-gradient(120deg, #a5f3fc 10%, #22d3ee 55%, #297189 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hub .sub { margin-top: 10px; font-size: 15px; letter-spacing: 5px; color: #bae6fd; opacity: .8; }
+  .hub .en { margin-top: 4px; font-size: 10px; letter-spacing: 2.4px; color: #67e8f9; opacity: .55; }
+
+  /* ── 节点卡片 ── */
+  .node { position: absolute; width: 305px; padding: 20px 22px 17px;
+    border-radius: 16px; transform: translate(-50%,-50%);
+    background: rgba(13,24,40,.72);
+    border: 1px solid rgba(103,232,249,.26);
+    box-shadow: 0 0 24px rgba(8,20,36,.8), inset 0 1px 0 rgba(255,255,255,.05);
+    backdrop-filter: blur(4px); }
+  .node .no { position: absolute; top: -13px; left: 18px; font-size: 13px; font-weight: 700;
+    letter-spacing: 1.5px; color: #071018; background: linear-gradient(90deg,#67e8f9,#22d3ee);
+    padding: 3px 11px; border-radius: 999px; }
+  .node .hd { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+  .node .ic { font-size: 23px; }
+  .node .nm { font-size: 22.5px; font-weight: 700; letter-spacing: 2px; }
+  .node .ds { margin-top: 8px; font-size: 14.5px; line-height: 1.6; color: #a9cbd6;
+    word-break: keep-all; }
+  .node.hot { border-color: rgba(251,191,36,.5); }
+  .node.hot .no { background: linear-gradient(90deg,#fde68a,#f59e0b); color: #201200; }
+
+  svg.wires { position: absolute; inset: 0; width: 1600px; height: 1000px; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="grid"></div>
+
+<svg class="wires" viewBox="0 0 1600 1000">
+  <defs>
+    <linearGradient id="wire" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity=".85"/>
+      <stop offset="100%" stop-color="#297189" stop-opacity=".55"/>
+    </linearGradient>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#67e8f9" opacity=".9"/>
+    </marker>
+  </defs>
+  <!-- 外环流道（6 节点，椭圆弧带箭头，起止于顶部、不闭环） -->
+  <g fill="none" stroke="url(#wire)" stroke-width="2.4">
+    <path d="M 992 190 A 560 330 0 0 1 1160 247" marker-end="url(#arr)"/>
+    <path d="M 1352 443 A 560 330 0 0 1 1352 557" marker-end="url(#arr)"/>
+    <path d="M 1160 753 A 560 330 0 0 1 992 810" marker-end="url(#arr)"/>
+    <path d="M 608 810 A 560 330 0 0 1 440 753" marker-end="url(#arr)"/>
+    <path d="M 248 557 A 560 330 0 0 1 248 443" marker-end="url(#arr)"/>
+  </g>
+  <!-- 流道光点 -->
+  <g fill="#67e8f9">
+    <circle cx="1080" cy="214" r="3.4" opacity=".95"/>
+    <circle cx="1360" cy="500" r="3.4" opacity=".9"/>
+    <circle cx="1080" cy="786" r="3.4" opacity=".95"/>
+    <circle cx="520" cy="786" r="3.4" opacity=".9"/>
+    <circle cx="240" cy="500" r="3.4" opacity=".95"/>
+  </g>
+  <!-- 中心到节点的辐条（虚线） -->
+  <g fill="none" stroke="#38bdf8" stroke-width="1" stroke-dasharray="3 7" opacity=".38">
+    <line x1="800" y1="355" x2="800" y2="262"/>
+    <line x1="965" y1="457" x2="1112" y2="326"/>
+    <line x1="965" y1="583" x2="1112" y2="674"/>
+    <line x1="800" y1="695" x2="800" y2="738"/>
+    <line x1="635" y1="583" x2="488" y2="674"/>
+    <line x1="635" y1="457" x2="488" y2="326"/>
+  </g>
+</svg>
+
+<div class="title">
+  <div class="cn">Pdf2Fac 因子蒸馏流水线</div>
+  <div class="en">Books → Tradable Alpha · Fully Automated</div>
+</div>
+<div class="badge">SKILL PIPELINE MAP</div>
+
+<!-- 中心 Hub -->
+<div class="hub">
+  <div class="ring r3"></div><div class="ring"></div><div class="ring r2"></div>
+  <div class="core">
+    <div class="mono">P2F</div>
+    <div class="sub">因子蒸馏</div>
+    <div class="en">PDF2FAC ENGINE</div>
+  </div>
+</div>
+
+<!-- 6 节点（顺时针，自顶部起） -->
+<div class="node" style="left:800px; top:170px">
+  <div class="no">01</div>
+  <div class="hd"><div class="ic">📚</div><div class="nm">文本层</div></div>
+  <div class="ds">书籍 / 研报 / 信件 PDF 接入<br>智能 OCR 与文字层双路径</div>
+</div>
+<div class="node" style="left:1285px; top:335px">
+  <div class="no">02</div>
+  <div class="hd"><div class="ic">🧠</div><div class="nm">提炼层</div></div>
+  <div class="ds">大模型按模板提炼因子<br>原文依据强制可溯源</div>
+</div>
+<div class="node" style="left:1285px; top:665px">
+  <div class="no">03</div>
+  <div class="hd"><div class="ic">⚙️</div><div class="nm">转化层</div></div>
+  <div class="ds">大模型编写回测代码<br>真实数据上自测迭代</div>
+</div>
+<div class="node" style="left:800px; top:830px">
+  <div class="no">04</div>
+  <div class="hd"><div class="ic">📈</div><div class="nm">回测层</div></div>
+  <div class="ds">择时 / 截面 / 轮动 / 筛选四引擎<br>次日开盘成交的可成交口径</div>
+</div>
+<div class="node" style="left:315px; top:665px">
+  <div class="no">05</div>
+  <div class="hd"><div class="ic">⭐</div><div class="nm">精选层</div></div>
+  <div class="ds">类型化阈值筛选<br>人工复核并集 · 图文导出</div>
+</div>
+<div class="node" style="left:315px; top:335px">
+  <div class="no">06</div>
+  <div class="hd"><div class="ic">🧪</div><div class="nm">精修层</div></div>
+  <div class="ds">参数邻域扰动调优<br>样本内外对照防过拟合</div>
+</div>
+</body>
+</html>

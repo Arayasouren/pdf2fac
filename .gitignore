@@ -1,0 +1,7 @@
+data_cache/
+db/
+results/
+factor_gen/
+__pycache__/
+*.pyc
+.DS_Store
